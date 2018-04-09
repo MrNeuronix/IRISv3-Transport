@@ -84,6 +84,21 @@
         </dependency>
 	</dependencies>
 
+    <profiles>
+        <profile>
+            <id>home</id>
+            <properties>
+                <target.dir>X:/write/scooter-0.0.1-SNAPSHOT</target.dir>
+            </properties>
+        </profile>
+        <profile>
+            <id>work</id>
+            <properties>
+                <target.dir>/rpi/write/scooter-0.0.1-SNAPSHOT</target.dir>
+            </properties>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
 
@@ -164,7 +179,7 @@
                         </goals>
 
                         <configuration>
-                            <outputDirectory>Z:/write/scooter-0.0.1-SNAPSHOT</outputDirectory>
+                            <outputDirectory>${target.dir}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>/target</directory>
