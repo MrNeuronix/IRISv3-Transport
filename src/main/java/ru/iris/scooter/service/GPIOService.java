@@ -95,8 +95,8 @@ public class GPIOService {
         gpioVoltage = new ADS1115GpioProvider(I2CBus.BUS_1, ADS1115GpioProvider.ADS1115_ADDRESS_0x4A);
         voltageInput = gpio.provisionAnalogInputPin(gpioVoltage, ADS1115Pin.INPUT_A0, "Voltage-A0");
         gpioVoltage.setProgrammableGainAmplifier(ADS1x15GpioProvider.ProgrammableGainAmplifierValue.PGA_4_096V, ADS1115Pin.ALL);
-        gpioVoltage.setEventThreshold(80, ADS1115Pin.ALL);
-        gpioVoltage.setMonitorInterval(100);
+        gpioVoltage.setEventThreshold(50, ADS1115Pin.ALL);
+        gpioVoltage.setMonitorInterval(1000);
     }
 
     public static synchronized GPIOService getInstance() {

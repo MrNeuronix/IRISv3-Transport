@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ru.iris</groupId>
-	<artifactId>scooter</artifactId>
+    <artifactId>transport</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-	<name>scooter</name>
+    <name>transport</name>
 
     <repositories>
         <repository>
@@ -88,7 +88,7 @@
         <profile>
             <id>home</id>
             <properties>
-                <target.dir>X:/write/scooter-0.0.1-SNAPSHOT</target.dir>
+                <target.dir>Z:/write/scooter-0.0.1-SNAPSHOT</target.dir>
             </properties>
         </profile>
         <profile>

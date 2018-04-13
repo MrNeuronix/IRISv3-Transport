@@ -50,7 +50,7 @@ public class Starter {
             log.info("Battery voltage: {}", df.format(voltageBattery));
             ws.send(BatteryDataEvent.builder()
                     .id(Integer.parseInt(configService.get("transport.id")))
-                    .voltage(voltage)
+                    .voltage(Double.valueOf(df.format(voltageBattery)))
                     .build()
             );
         });

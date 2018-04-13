@@ -8,7 +8,6 @@ import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 import ru.iris.models.bus.transport.TransportConnectEvent;
 
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.channels.NotYetConnectedException;
@@ -65,6 +64,7 @@ public class WSClientService {
             public void onClose( int code, String reason, boolean remote ) {
                 log.info("IRIS WS endpoint disconnected");
                 gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
+                connect();
             }
 
             @Override
