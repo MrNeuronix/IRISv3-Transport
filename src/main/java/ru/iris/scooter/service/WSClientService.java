@@ -71,8 +71,8 @@ public class WSClientService {
             public void onError( Exception ex ) {
                 log.info("error", ex);
                 gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
+                connect();
             }
-
         };
     }
 
