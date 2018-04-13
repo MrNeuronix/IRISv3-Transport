@@ -1,11 +1,16 @@
 package ru.iris.scooter;
 
+import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
+import com.pi4j.io.gpio.event.GpioPinListenerAnalog;
 import lombok.extern.slf4j.Slf4j;
+import ru.iris.models.bus.transport.BatteryDataEvent;
 import ru.iris.models.bus.transport.GPSDataEvent;
 import ru.iris.scooter.service.ConfigService;
 import ru.iris.scooter.service.GPIOService;
 import ru.iris.scooter.service.GPSService;
 import ru.iris.scooter.service.WSClientService;
+
+import java.text.DecimalFormat;
 
 /**
  * @author nix (06.04.2018)
@@ -13,6 +18,8 @@ import ru.iris.scooter.service.WSClientService;
 
 @Slf4j
 public class Starter {
+    private static final DecimalFormat df = new DecimalFormat("#.##");
+    private static final double dividerMultiplier = 14.33;
 
     public static void main(String[] args) throws InterruptedException {
         log.info("Starting transport info sender");
@@ -33,6 +40,20 @@ public class Starter {
             log.info("Waiting for GPS init done");
             Thread.sleep(1000L);
         }
+
+        gpio.getVoltageInput().addListener((GpioPinListenerAnalog) event -> {
+            double value = event.getValue();
+            double percent = ((value * 103.5) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
+            double voltage = gpio.getGpioVoltage().getProgrammableGainAmplifier(event.getPin()).getVoltage() * (percent / 100);
+            double voltageBattery = voltage * dividerMultiplier; // value * dividerMultiplier * 4.096 / 32768
+
+            log.info("Battery voltage: {}", df.format(voltageBattery));
+            ws.send(BatteryDataEvent.builder()
+                    .id(Integer.parseInt(configService.get("transport.id")))
+                    .voltage(voltage)
+                    .build()
+            );
+        });
 
         log.info("OK. IRIS connector is launched!");
 
