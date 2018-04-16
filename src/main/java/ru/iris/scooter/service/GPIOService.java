@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.concurrent.Future;
  * @author nix (07.04.2018)
  */
 
-@Slf4j
+@Log4j2
 public class GPIOService {
     @Getter
     private final ADS1115GpioProvider gpioVoltage;
@@ -95,7 +95,7 @@ public class GPIOService {
         gpioVoltage = new ADS1115GpioProvider(I2CBus.BUS_1, ADS1115GpioProvider.ADS1115_ADDRESS_0x4A);
         voltageInput = gpio.provisionAnalogInputPin(gpioVoltage, ADS1115Pin.INPUT_A0, "Voltage-A0");
         gpioVoltage.setProgrammableGainAmplifier(ADS1x15GpioProvider.ProgrammableGainAmplifierValue.PGA_4_096V, ADS1115Pin.ALL);
-        gpioVoltage.setEventThreshold(50, ADS1115Pin.ALL);
+        gpioVoltage.setEventThreshold(100, ADS1115Pin.ALL);
         gpioVoltage.setMonitorInterval(1000);
     }
 

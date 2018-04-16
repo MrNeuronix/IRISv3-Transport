@@ -65,15 +65,57 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.7</version>
         </dependency>
 
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
             <groupId>ru.iris</groupId>
             <artifactId>models</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hs.gpxparser</groupId>
+            <artifactId>gpxparser</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.2</version>
         </dependency>
 
         <dependency>
@@ -118,6 +160,15 @@
                             <version>0.0.1-SNAPSHOT</version>
                             <packaging>jar</packaging>
                             <generatePom>true</generatePom>
+
+                            <file>${basedir}/lib/gpx-parser-1.2.jar</file>
+                            <repositoryLayout>default</repositoryLayout>
+                            <groupId>com.hs.gpxparser</groupId>
+                            <artifactId>gpxparser</artifactId>
+                            <version>1.2</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+
                         </configuration>
                         <goals>
                             <goal>install-file</goal>

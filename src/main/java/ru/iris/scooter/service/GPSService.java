@@ -7,13 +7,15 @@ import com.ivkos.gpsd4j.messages.enums.NMEAMode;
 import com.ivkos.gpsd4j.messages.reports.SKYReport;
 import com.ivkos.gpsd4j.messages.reports.TPVReport;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+
+import java.time.LocalDateTime;
 
 /**
  * @author nix (06.04.2018)
  */
 
-@Slf4j
+@Log4j2
 public class GPSService {
     private static GPSService instance;
     private ConfigService configService;
@@ -40,6 +42,12 @@ public class GPSService {
 
     @Getter
     private double speed;
+
+    @Getter
+    private double altitude;
+
+    @Getter
+    private LocalDateTime time;
 
     public static synchronized GPSService getInstance() {
         if(instance == null) {
@@ -79,8 +87,10 @@ public class GPSService {
                         latitude = tpv.getLatitude();
                         longitude = tpv.getLongitude();
                         speed = tpv.getSpeed();
+                        altitude = tpv.getAltitude();
+                        time = tpv.getTime();
 
-                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 200L);
+                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
                     } else {
                         fix = false;
                     }

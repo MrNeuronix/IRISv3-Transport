@@ -1,6 +1,6 @@
 package ru.iris.scooter.service;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.util.Properties;
  * @author nix (07.04.2018)
  */
 
-@Slf4j
+@Log4j2
 public class ConfigService {
     private static ConfigService instance;
     private Properties config;

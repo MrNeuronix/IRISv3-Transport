@@ -2,7 +2,8 @@ package ru.iris.scooter.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
@@ -16,13 +17,16 @@ import java.nio.channels.NotYetConnectedException;
  * @author nix (07.04.2018)
  */
 
-@Slf4j
+@Log4j2
 public class WSClientService {
     private static WSClientService instance;
     private ConfigService configService;
     private GPIOService gpio = GPIOService.getInstance();
     private ObjectMapper objectMapper = new ObjectMapper();
     private WebSocketClient client;
+
+    @Getter
+    private boolean connected = false;
 
     public static synchronized WSClientService getInstance() {
         if(instance == null) {
@@ -45,6 +49,7 @@ public class WSClientService {
         client = new WebSocketClient( new URI( "ws://" + configService.get("ws.server") + "/transport" )) {
             @Override
             public void onMessage( String message ) {
+                log.info("Incoming message: {}", message);
             }
 
             @Override
@@ -69,7 +74,7 @@ public class WSClientService {
 
             @Override
             public void onError( Exception ex ) {
-                log.info("error", ex);
+                log.info("WS got error", ex);
                 gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
                 connect();
             }
@@ -78,7 +83,7 @@ public class WSClientService {
 
     public void connect() {
         try {
-            boolean connected = client.connectBlocking();
+            connected = client.connectBlocking();
 
             if(!connected) {
                 log.error("Can't connect now. Reconnecting");
@@ -86,7 +91,6 @@ public class WSClientService {
                 Thread.sleep(2000L);
                 connect();
             }
-
         } catch (InterruptedException e) {
             log.error("Can't connect now - interrupted. Reconnecting");
             gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
@@ -104,7 +108,9 @@ public class WSClientService {
 
     public void send(Object message) {
         try {
-            client.send(objectMapper.writeValueAsString(message));
+            if (connected) {
+                client.send(objectMapper.writeValueAsString(message));
+            }
         } catch (JsonProcessingException e) {
             log.info("error", e);
         } catch (NotYetConnectedException | WebsocketNotConnectedException e) {
