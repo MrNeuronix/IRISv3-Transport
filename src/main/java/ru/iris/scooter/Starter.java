@@ -71,7 +71,7 @@ public class Starter {
             );
 
             if(gps.isFix()) {
-                log.info("Lat: {}, Lon: {}, Speed: {}", latitude, longitude, speed);
+                log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
 
                 ws.send(GPSDataEvent.builder()
                         .latitude(latitude)
