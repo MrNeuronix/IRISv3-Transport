@@ -6,7 +6,10 @@ import lombok.extern.log4j.Log4j2;
 import ru.iris.models.bus.transport.BatteryDataEvent;
 import ru.iris.models.bus.transport.GPSDataEvent;
 import ru.iris.models.bus.transport.TransportPingEvent;
-import ru.iris.scooter.service.*;
+import ru.iris.scooter.service.ConfigService;
+import ru.iris.scooter.service.GPIOService;
+import ru.iris.scooter.service.GPSService;
+import ru.iris.scooter.service.WSClientService;
 
 import java.text.DecimalFormat;
 
@@ -47,21 +50,14 @@ public class Starter {
 
             log.info("Battery voltage: {}, gain: {}", df.format(voltageBattery), voltage);
 
-            if (ws.isOnline()) {
-                ws.send(BatteryDataEvent.builder()
-                        .id(Integer.parseInt(configService.get("transport.id")))
-                        .voltage(Double.valueOf(df.format(voltageBattery)))
-                        .build()
-                );
-            }
+            ws.send(BatteryDataEvent.builder()
+                    .id(Integer.parseInt(configService.get("transport.id")))
+                    .voltage(Double.valueOf(df.format(voltageBattery)))
+                    .build()
+            );
         });
 
         log.info("OK. IRIS connector is launched!");
-
-        while (!gps.isFix()) {
-            log.info("Waiting for GPS FIX");
-            Thread.sleep(1000L);
-        }
 
         while (true) {
             double latitude = gps.getLatitude();
@@ -83,7 +79,6 @@ public class Starter {
                         .id(Integer.valueOf(configService.get("transport.id")))
                         .build()
                 );
-
             }
 
             Thread.sleep(5000L);
