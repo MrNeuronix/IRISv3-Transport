@@ -3,7 +3,7 @@ package ru.iris.scooter.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
@@ -17,7 +17,7 @@ import java.nio.channels.NotYetConnectedException;
  * @author nix (07.04.2018)
  */
 
-@Log4j2
+@Slf4j
 public class WSClientService {
     private static WSClientService instance;
     private ConfigService configService;
@@ -26,7 +26,7 @@ public class WSClientService {
     private WebSocketClient client;
 
     @Getter
-    private boolean connected = false;
+    private boolean online = false;
 
     public static synchronized WSClientService getInstance() {
         if(instance == null) {
@@ -49,7 +49,6 @@ public class WSClientService {
         client = new WebSocketClient( new URI( "ws://" + configService.get("ws.server") + "/transport" )) {
             @Override
             public void onMessage( String message ) {
-                log.info("Incoming message: {}", message);
             }
 
             @Override
@@ -74,7 +73,7 @@ public class WSClientService {
 
             @Override
             public void onError( Exception ex ) {
-                log.info("WS got error", ex);
+                log.info("error", ex);
                 gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
                 connect();
             }
@@ -83,7 +82,8 @@ public class WSClientService {
 
     public void connect() {
         try {
-            connected = client.connectBlocking();
+            createClient();
+            boolean connected = client.connectBlocking();
 
             if(!connected) {
                 log.error("Can't connect now. Reconnecting");
@@ -91,31 +91,27 @@ public class WSClientService {
                 Thread.sleep(2000L);
                 connect();
             }
-        } catch (InterruptedException e) {
-            log.error("Can't connect now - interrupted. Reconnecting");
+            online = true;
+        } catch (InterruptedException | IllegalStateException e) {
+            log.error("Can't connect now. Reconnecting");
             gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
             connect();
-        } catch (IllegalStateException e) {
+        } catch (URISyntaxException e) {
+            log.error("Can't connect now - wrong URI");
             gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
-            log.error("Recreating client");
-            try {
-                createClient();
-            } catch (URISyntaxException ignored) {
-            }
-            connect();
         }
     }
 
     public void send(Object message) {
-        try {
-            if (connected) {
+        if(online) {
+            try {
                 client.send(objectMapper.writeValueAsString(message));
+            } catch (JsonProcessingException e) {
+                log.info("error", e);
+            } catch (NotYetConnectedException | WebsocketNotConnectedException e) {
+                gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
+                connect();
             }
-        } catch (JsonProcessingException e) {
-            log.info("error", e);
-        } catch (NotYetConnectedException | WebsocketNotConnectedException e) {
-            gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
-            connect();
         }
     }
 }
