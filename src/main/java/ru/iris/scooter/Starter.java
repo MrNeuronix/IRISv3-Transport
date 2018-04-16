@@ -63,6 +63,7 @@ public class Starter {
             double latitude = gps.getLatitude();
             double longitude = gps.getLongitude();
             double speed = gps.getSpeed();
+            double elevation = gps.getAltitude();
 
             ws.send(TransportPingEvent.builder()
                     .id(Integer.valueOf(configService.get("transport.id")))
@@ -76,6 +77,7 @@ public class Starter {
                         .latitude(latitude)
                         .longitude(longitude)
                         .speed(speed)
+                        .elevation(elevation)
                         .id(Integer.valueOf(configService.get("transport.id")))
                         .build()
                 );
