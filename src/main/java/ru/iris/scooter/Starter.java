@@ -12,6 +12,8 @@ import ru.iris.scooter.service.GPSService;
 import ru.iris.scooter.service.WSClientService;
 
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * @author nix (06.04.2018)
@@ -64,6 +66,7 @@ public class Starter {
             double longitude = gps.getLongitude();
             double speed = gps.getSpeed();
             double elevation = gps.getAltitude();
+            LocalDateTime time = gps.getTime();
 
             ws.send(TransportPingEvent.builder()
                     .id(Integer.valueOf(configService.get("transport.id")))
@@ -78,9 +81,13 @@ public class Starter {
                         .longitude(longitude)
                         .speed(speed)
                         .elevation(elevation)
+                        .time(Instant.from(time))
+                        .satellites(gps.getSatellites())
                         .id(Integer.valueOf(configService.get("transport.id")))
                         .build()
                 );
+            } else {
+                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 200L);
             }
 
             Thread.sleep(5000L);
