@@ -45,7 +45,7 @@ public class Starter {
             double value = event.getValue();
             double percent = ((value * 105.5) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
             double voltage = gpio.getGpioVoltage().getProgrammableGainAmplifier(event.getPin()).getVoltage() * (percent / 100);
-            double voltageBattery = voltage * dividerMultiplier; // value * dividerMultiplier * 4.096 / 32768
+            double voltageBattery = (voltage * dividerMultiplier) - 1; // value * dividerMultiplier * 4.096 / 32768
 
             log.info("Battery voltage: {}, gain: {}", df.format(voltageBattery), voltage);
 

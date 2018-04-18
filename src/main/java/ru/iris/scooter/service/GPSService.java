@@ -4,7 +4,9 @@ import com.google.common.collect.EvictingQueue;
 import de.taimos.gpsd4java.api.ObjectListener;
 import de.taimos.gpsd4java.backend.GPSdEndpoint;
 import de.taimos.gpsd4java.backend.ResultParser;
-import de.taimos.gpsd4java.types.*;
+import de.taimos.gpsd4java.types.ENMEAMode;
+import de.taimos.gpsd4java.types.SKYObject;
+import de.taimos.gpsd4java.types.TPVObject;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -22,7 +24,7 @@ public class GPSService {
     private static GPSService instance;
 
     @Getter
-    private volatile boolean fix = false;
+    private boolean fix = false;
 
     @Getter
     private Queue<GPSData> data = EvictingQueue.create(10);
