@@ -13,7 +13,6 @@ import ru.iris.scooter.service.WSClientService;
 
 import java.text.DecimalFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 /**
  * @author nix (06.04.2018)
@@ -21,15 +20,18 @@ import java.time.LocalDateTime;
 
 @Log4j2
 public class Starter {
-    private static final DecimalFormat df = new DecimalFormat("#.##");
-    private static final double dividerMultiplier = 14.33;
+    private final DecimalFormat df = new DecimalFormat("#.##");
+    private final double dividerMultiplier = 14.33;
+    private ConfigService configService = ConfigService.getInstance();
+    private GPIOService gpio = GPIOService.getInstance();
 
     public static void main(String[] args) throws InterruptedException {
+        new Starter().run();
+    }
+
+    private void run() throws InterruptedException {
         log.info("Starting transport info sender");
 
-        ConfigService configService = ConfigService.getInstance();
-
-        GPIOService gpio = GPIOService.getInstance();
         gpio.on(GPIOService.LED.MAIN, GPIOService.Color.RED);
 
         log.info("Starting GPS service");
@@ -74,9 +76,7 @@ public class Starter {
                         Instant time = data.getTime();
 
                         log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
-                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
-                        Thread.sleep(250L);
-                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
+                        fastDoublePulse(GPIOService.Color.GREEN);
 
                         ws.send(GPSDataEvent.builder()
                                 .latitude(latitude)
@@ -90,12 +90,16 @@ public class Starter {
                     }
                 }
             } else {
-                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 150L);
-                Thread.sleep(250L);
-                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 150L);
+                fastDoublePulse(GPIOService.Color.RED);
             }
 
             Thread.sleep(1000L);
         }
+    }
+
+    private void fastDoublePulse(GPIOService.Color color) throws InterruptedException {
+        gpio.pulse(GPIOService.LED.GPS, color, 150L);
+        Thread.sleep(250L);
+        gpio.pulse(GPIOService.LED.GPS, color, 150L);
     }
 }
