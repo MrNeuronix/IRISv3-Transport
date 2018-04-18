@@ -78,22 +78,6 @@ public class GPSService {
                 satellites = sky.getSatellites().size();
                 log.info("We can see {} satellites", satellites);
             }
-
-            @Override
-            public void handleSUBFRAME(final SUBFRAMEObject subframe) {
-            }
-
-            @Override
-            public void handleATT(final ATTObject att) {
-            }
-
-            @Override
-            public void handleDevice(final DeviceObject device) {
-            }
-
-            @Override
-            public void handleDevices(final DevicesObject devices) {
-            }
         });
 
         ep.start();
