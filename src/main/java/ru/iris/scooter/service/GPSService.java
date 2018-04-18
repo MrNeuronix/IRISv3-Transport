@@ -63,12 +63,12 @@ public class GPSService {
             @Override
             public void handleTPV(final TPVObject tpv) {
                 if(!tpv.getMode().equals(ENMEAMode.NoFix) && !tpv.getMode().equals(ENMEAMode.NotSeen)) {
-                    fix = true;
                     latitude = tpv.getLatitude();
                     longitude = tpv.getLongitude();
                     speed = tpv.getSpeed();
                     altitude = tpv.getAltitude();
                     time = tpv.getTimestamp();
+                    fix = true;
                 } else {
                     fix = false;
                 }
