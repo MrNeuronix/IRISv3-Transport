@@ -1,13 +1,17 @@
 package ru.iris.scooter.service;
 
+import com.google.common.collect.EvictingQueue;
 import de.taimos.gpsd4java.api.ObjectListener;
 import de.taimos.gpsd4java.backend.GPSdEndpoint;
 import de.taimos.gpsd4java.backend.ResultParser;
 import de.taimos.gpsd4java.types.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Queue;
 
 /**
  * @author nix (06.04.2018)
@@ -18,25 +22,20 @@ public class GPSService {
     private static GPSService instance;
 
     @Getter
-    private boolean fix = false;
+    private volatile boolean fix = false;
 
     @Getter
-    private volatile Integer satellites;
+    private Queue<GPSData> data = EvictingQueue.create(10);
 
     @Getter
-    private volatile Double latitude;
-
-    @Getter
-    private volatile Double longitude;
-
-    @Getter
-    private volatile Double speed;
-
-    @Getter
-    private volatile Double altitude;
-
-    @Getter
-    private volatile Double time;
+    @Builder
+    public static class GPSData {
+        private Double latitude;
+        private Double longitude;
+        private Double speed;
+        private Double altitude;
+        private Instant time;
+    }
 
     public static synchronized GPSService getInstance() {
         if(instance == null) {
@@ -63,11 +62,15 @@ public class GPSService {
             @Override
             public void handleTPV(final TPVObject tpv) {
                 if(!tpv.getMode().equals(ENMEAMode.NoFix) && !tpv.getMode().equals(ENMEAMode.NotSeen)) {
-                    latitude = tpv.getLatitude();
-                    longitude = tpv.getLongitude();
-                    speed = tpv.getSpeed();
-                    altitude = tpv.getAltitude();
-                    time = tpv.getTimestamp();
+                    data.offer(
+                            GPSData.builder()
+                                    .latitude(tpv.getLatitude())
+                                    .longitude(tpv.getLongitude())
+                                    .altitude(tpv.getAltitude())
+                                    .speed(tpv.getSpeed())
+                                    .time(Instant.ofEpochMilli((long) tpv.getTimestamp()))
+                                    .build()
+                    );
                     fix = true;
                 } else {
                     fix = false;
@@ -76,9 +79,8 @@ public class GPSService {
 
             @Override
             public void handleSKY(final SKYObject sky) {
-                satellites = sky.getSatellites().size();
-                if(satellites > 0) {
-                    log.info("We can see {} satellites", satellites);
+                if(sky.getSatellites().size() > 0) {
+                    log.info("We can see {} satellites", sky.getSatellites().size());
                 }
             }
         });

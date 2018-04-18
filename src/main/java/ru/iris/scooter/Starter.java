@@ -57,33 +57,38 @@ public class Starter {
         log.info("Starting to fetch GPS data");
 
         while (true) {
-            Double latitude = gps.getLatitude();
-            Double longitude = gps.getLongitude();
-            Double speed = gps.getSpeed();
-            Double elevation = gps.getAltitude();
-            Instant time = Instant.now();
-
             ws.send(TransportPingEvent.builder()
                     .id(Integer.valueOf(configService.get("transport.id")))
                     .build()
             );
 
             if(gps.isFix()) {
-                log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
-                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
-                Thread.sleep(250L);
-                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
+                while (!gps.getData().isEmpty()) {
+                    GPSService.GPSData data = gps.getData().poll();
 
-                ws.send(GPSDataEvent.builder()
-                        .latitude(latitude)
-                        .longitude(longitude)
-                        .speed(speed)
-                        .elevation(elevation)
-                        .time(time)
-                        .satellites(gps.getSatellites())
-                        .id(Integer.valueOf(configService.get("transport.id")))
-                        .build()
-                );
+                    if(data != null) {
+                        Double latitude = data.getLatitude();
+                        Double longitude = data.getLongitude();
+                        Double speed = data.getSpeed();
+                        Double elevation = data.getAltitude();
+                        Instant time = data.getTime();
+
+                        log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
+                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
+                        Thread.sleep(250L);
+                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
+
+                        ws.send(GPSDataEvent.builder()
+                                .latitude(latitude)
+                                .longitude(longitude)
+                                .speed(speed)
+                                .elevation(elevation)
+                                .time(time)
+                                .id(Integer.valueOf(configService.get("transport.id")))
+                                .build()
+                        );
+                    }
+                }
             } else {
                 gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 150L);
                 Thread.sleep(250L);
