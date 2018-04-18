@@ -77,7 +77,9 @@ public class GPSService {
             @Override
             public void handleSKY(final SKYObject sky) {
                 satellites = sky.getSatellites().size();
-                log.info("We can see {} satellites", satellites);
+                if(satellites > 0) {
+                    log.info("We can see {} satellites", satellites);
+                }
             }
         });
 
