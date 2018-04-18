@@ -90,7 +90,7 @@ public class Starter {
                 gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 200L);
             }
 
-            Thread.sleep(5000L);
+            Thread.sleep(1000L);
         }
     }
 }
