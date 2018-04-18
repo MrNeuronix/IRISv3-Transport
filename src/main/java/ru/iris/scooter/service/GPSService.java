@@ -69,6 +69,8 @@ public class GPSService {
                     speed = tpv.getSpeed();
                     altitude = tpv.getAltitude();
                     time = tpv.getTimestamp();
+                } else {
+                    fix = false;
                 }
             }
 
