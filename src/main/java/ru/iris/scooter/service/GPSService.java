@@ -4,7 +4,6 @@ import de.taimos.gpsd4java.api.ObjectListener;
 import de.taimos.gpsd4java.backend.GPSdEndpoint;
 import de.taimos.gpsd4java.backend.ResultParser;
 import de.taimos.gpsd4java.types.*;
-import de.taimos.gpsd4java.types.subframes.SUBFRAMEObject;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
@@ -84,7 +83,7 @@ public class GPSService {
         try {
             ep.watch(true, true);
         } catch (IOException e) {
-            log.error("", e);
+            log.error("Can't watch on GPSd events", e);
         }
     }
 }
