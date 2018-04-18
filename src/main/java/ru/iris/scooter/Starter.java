@@ -64,31 +64,32 @@ public class Starter {
                     .build()
             );
 
-            if(gps.isFix()) {
-                while (!gps.getData().isEmpty()) {
-                    GPSService.GPSData data = gps.getData().poll();
+            while (!gps.getData().isEmpty()) {
+                GPSService.GPSData data = gps.getData().poll();
 
-                    if(data != null) {
-                        Double latitude = data.getLatitude();
-                        Double longitude = data.getLongitude();
-                        Double speed = data.getSpeed();
-                        Double elevation = data.getAltitude();
-                        Instant time = data.getTime();
+                if (data != null) {
+                    Double latitude = data.getLatitude();
+                    Double longitude = data.getLongitude();
+                    Double speed = data.getSpeed();
+                    Double elevation = data.getAltitude();
+                    Instant time = data.getTime();
 
-                        log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
-                        fastDoublePulse(GPIOService.Color.GREEN);
+                    log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
 
-                        ws.send(GPSDataEvent.builder()
-                                .latitude(latitude)
-                                .longitude(longitude)
-                                .speed(speed)
-                                .elevation(elevation)
-                                .time(time)
-                                .id(Integer.valueOf(configService.get("transport.id")))
-                                .build()
-                        );
-                    }
+                    ws.send(GPSDataEvent.builder()
+                            .latitude(latitude)
+                            .longitude(longitude)
+                            .speed(speed)
+                            .elevation(elevation)
+                            .time(time)
+                            .id(Integer.valueOf(configService.get("transport.id")))
+                            .build()
+                    );
                 }
+            }
+
+            if(gps.isFix()) {
+                fastDoublePulse(GPIOService.Color.GREEN);
             } else {
                 fastDoublePulse(GPIOService.Color.RED);
             }
