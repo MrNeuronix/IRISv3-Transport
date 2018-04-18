@@ -12,7 +12,6 @@ import ru.iris.scooter.service.GPSService;
 import ru.iris.scooter.service.WSClientService;
 
 import java.text.DecimalFormat;
-import java.time.Instant;
 
 /**
  * @author nix (06.04.2018)
@@ -72,7 +71,7 @@ public class Starter {
                     Double longitude = data.getLongitude();
                     Double speed = data.getSpeed();
                     Double elevation = data.getAltitude();
-                    Instant time = data.getTime();
+                    Long time = data.getTime();
 
                     log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
 

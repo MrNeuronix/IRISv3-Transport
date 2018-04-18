@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Queue;
 
 /**
@@ -28,23 +27,6 @@ public class GPSService {
 
     @Getter
     private Queue<GPSData> data = EvictingQueue.create(10);
-
-    @Getter
-    @Builder
-    public static class GPSData {
-        private Double latitude;
-        private Double longitude;
-        private Double speed;
-        private Double altitude;
-        private Instant time;
-    }
-
-    public static synchronized GPSService getInstance() {
-        if(instance == null) {
-            instance = new GPSService();
-        }
-        return instance;
-    }
 
     private GPSService() {
         ConfigService configService = ConfigService.getInstance();
@@ -69,8 +51,8 @@ public class GPSService {
                                     .latitude(tpv.getLatitude())
                                     .longitude(tpv.getLongitude())
                                     .altitude(tpv.getAltitude())
-                                    .speed(tpv.getSpeed())
-                                    .time(Instant.ofEpochMilli((long) tpv.getTimestamp()))
+                                    .speed(tpv.getSpeed() * 3.6D)
+                                    .time((long) tpv.getTimestamp())
                                     .build()
                     );
                     fix = true;
@@ -93,5 +75,22 @@ public class GPSService {
         } catch (IOException e) {
             log.error("Can't watch on GPSd events", e);
         }
+    }
+
+    public static synchronized GPSService getInstance() {
+        if (instance == null) {
+            instance = new GPSService();
+        }
+        return instance;
+    }
+
+    @Getter
+    @Builder
+    public static class GPSData {
+        private Double latitude;
+        private Double longitude;
+        private Double speed;
+        private Double altitude;
+        private Long time;
     }
 }
