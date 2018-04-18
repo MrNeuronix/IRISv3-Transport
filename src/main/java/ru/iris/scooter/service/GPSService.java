@@ -76,7 +76,7 @@ public class GPSService {
             @Override
             public void handleSKY(final SKYObject sky) {
                 satellites = sky.getSatellites().size();
-                log.info("We can see {} satellites\n", satellites);
+                log.info("We can see {} satellites", satellites);
             }
 
             @Override
@@ -97,5 +97,10 @@ public class GPSService {
         });
 
         ep.start();
+        try {
+            ep.watch(true, true);
+        } catch (IOException e) {
+            log.error("", e);
+        }
     }
 }
