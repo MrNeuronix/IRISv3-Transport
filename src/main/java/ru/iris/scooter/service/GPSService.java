@@ -17,7 +17,6 @@ import java.io.IOException;
 @Log4j2
 public class GPSService {
     private static GPSService instance;
-    private GPIOService gpio;
 
     @Getter
     private boolean fix = false;
@@ -49,7 +48,6 @@ public class GPSService {
 
     private GPSService() {
         ConfigService configService = ConfigService.getInstance();
-        gpio = GPIOService.getInstance();
 
         final GPSdEndpoint ep;
         try {
@@ -72,8 +70,6 @@ public class GPSService {
                     speed = tpv.getSpeed();
                     altitude = tpv.getAltitude();
                     time = tpv.getTimestamp();
-
-                    gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
                 }
             }
 

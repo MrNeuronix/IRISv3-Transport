@@ -54,7 +54,7 @@ public class Starter {
             );
         });
 
-        log.info("OK. IRIS connector is launched!");
+        log.info("Starting to fetch GPS data");
 
         while (true) {
             Double latitude = gps.getLatitude();
@@ -70,6 +70,9 @@ public class Starter {
 
             if(gps.isFix()) {
                 log.info("Lat: {}, Lon: {}, Speed: {}, Elevation: {}", latitude, longitude, speed, elevation);
+                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
+                Thread.sleep(250L);
+                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
 
                 ws.send(GPSDataEvent.builder()
                         .latitude(latitude)
@@ -82,6 +85,8 @@ public class Starter {
                         .build()
                 );
             } else {
+                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 150L);
+                Thread.sleep(250L);
                 gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 150L);
             }
 
