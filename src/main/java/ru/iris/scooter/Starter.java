@@ -39,11 +39,6 @@ public class Starter {
 
         ws.connect();
 
-        while (!GPSService.isInitialized()) {
-            log.info("Waiting for GPS init done");
-            Thread.sleep(1000L);
-        }
-
         gpio.getVoltageInput().addListener((GpioPinListenerAnalog) event -> {
             double value = event.getValue();
             double percent = ((value * 105.5) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
@@ -62,11 +57,11 @@ public class Starter {
         log.info("OK. IRIS connector is launched!");
 
         while (true) {
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
-            double speed = gps.getSpeed();
-            double elevation = gps.getAltitude();
-            LocalDateTime time = gps.getTime();
+            Double latitude = gps.getLatitude();
+            Double longitude = gps.getLongitude();
+            Double speed = gps.getSpeed();
+            Double elevation = gps.getAltitude();
+            Instant time = Instant.now();
 
             ws.send(TransportPingEvent.builder()
                     .id(Integer.valueOf(configService.get("transport.id")))
@@ -81,13 +76,13 @@ public class Starter {
                         .longitude(longitude)
                         .speed(speed)
                         .elevation(elevation)
-                        .time(Instant.from(time))
+                        .time(time)
                         .satellites(gps.getSatellites())
                         .id(Integer.valueOf(configService.get("transport.id")))
                         .build()
                 );
             } else {
-                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 200L);
+                gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.RED, 150L);
             }
 
             Thread.sleep(1000L);

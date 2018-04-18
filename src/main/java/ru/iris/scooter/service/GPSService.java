@@ -1,15 +1,14 @@
 package ru.iris.scooter.service;
 
-import com.ivkos.gpsd4j.client.GpsdClient;
-import com.ivkos.gpsd4j.client.GpsdClientOptions;
-import com.ivkos.gpsd4j.messages.DeviceMessage;
-import com.ivkos.gpsd4j.messages.enums.NMEAMode;
-import com.ivkos.gpsd4j.messages.reports.SKYReport;
-import com.ivkos.gpsd4j.messages.reports.TPVReport;
+import de.taimos.gpsd4java.api.ObjectListener;
+import de.taimos.gpsd4java.backend.GPSdEndpoint;
+import de.taimos.gpsd4java.backend.ResultParser;
+import de.taimos.gpsd4java.types.*;
+import de.taimos.gpsd4java.types.subframes.SUBFRAMEObject;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 
 /**
  * @author nix (06.04.2018)
@@ -18,36 +17,28 @@ import java.time.LocalDateTime;
 @Log4j2
 public class GPSService {
     private static GPSService instance;
-    private ConfigService configService;
-    private GpsdClient client;
     private GPIOService gpio;
-
-    @Getter
-    private static boolean initialized = false;
 
     @Getter
     private boolean fix = false;
 
     @Getter
-    private boolean error = false;
+    private volatile Integer satellites;
 
     @Getter
-    private int satellites;
+    private volatile Double latitude;
 
     @Getter
-    private double latitude;
+    private volatile Double longitude;
 
     @Getter
-    private double longitude;
+    private volatile Double speed;
 
     @Getter
-    private double speed;
+    private volatile Double altitude;
 
     @Getter
-    private double altitude;
-
-    @Getter
-    private LocalDateTime time;
+    private volatile Double time;
 
     public static synchronized GPSService getInstance() {
         if(instance == null) {
@@ -57,55 +48,58 @@ public class GPSService {
     }
 
     private GPSService() {
-        configService = ConfigService.getInstance();
-
+        ConfigService configService = ConfigService.getInstance();
         gpio = GPIOService.getInstance();
-        gpio.blink(GPIOService.LED.GPS, GPIOService.Color.RED, 500L);
 
-        GpsdClientOptions options = new GpsdClientOptions()
-                .setReconnectOnDisconnect(true)
-                .setConnectTimeout(3000) // ms
-                .setIdleTimeout(30) // seconds
-                .setReconnectAttempts(10)
-                .setReconnectInterval(5000); // ms
+        final GPSdEndpoint ep;
+        try {
+            ep = new GPSdEndpoint(
+                    configService.get("gps.host"),
+                    Integer.valueOf(configService.get("gps.port")),
+                    new ResultParser());
+        } catch (IOException e) {
+            log.error("Can't connect to GPSd daemon", e);
+            return;
+        }
 
-        client = new GpsdClient(configService.get("gps.host"), Integer.valueOf(configService.get("gps.port")), options)
-                .setSuccessfulConnectionHandler(client -> {
-                    log.info("GPS initialized");
-                    initialized = true;
+        ep.addListener(new ObjectListener() {
+            @Override
+            public void handleTPV(final TPVObject tpv) {
+                if(!tpv.getMode().equals(ENMEAMode.NoFix) && !tpv.getMode().equals(ENMEAMode.NotSeen)) {
+                    fix = true;
+                    latitude = tpv.getLatitude();
+                    longitude = tpv.getLongitude();
+                    speed = tpv.getSpeed();
+                    altitude = tpv.getAltitude();
+                    time = tpv.getTimestamp();
 
-                    DeviceMessage device = new DeviceMessage();
-                    device.setPath(configService.get("gps.device.path"));
-                    device.setNative(true);
+                    gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
+                }
+            }
 
-                    client.sendCommand(device);
-                    client.watch();
-                })
-                .addHandler(TPVReport.class, tpv -> {
-                    if(!tpv.getMode().equals(NMEAMode.NoFix) && !tpv.getMode().equals(NMEAMode.NotSet)) {
-                        fix = true;
-                        latitude = tpv.getLatitude();
-                        longitude = tpv.getLongitude();
-                        speed = tpv.getSpeed();
-                        altitude = tpv.getAltitude();
-                        time = tpv.getTime();
+            @Override
+            public void handleSKY(final SKYObject sky) {
+                satellites = sky.getSatellites().size();
+                log.info("We can see {} satellites\n", satellites);
+            }
 
-                        gpio.pulse(GPIOService.LED.GPS, GPIOService.Color.GREEN, 150L);
-                    } else {
-                        fix = false;
-                    }
-                })
-                .addHandler(SKYReport.class, sky -> {
-                    satellites = sky.getSatellites().size();
-                    log.info("We can see {} satellites\n", satellites);
-                })
-                .addErrorHandler(err -> {
-                    log.error(err.getMessage());
-                    fix = false;
-                    error = true;
-                    satellites = 0;
-                    gpio.on(GPIOService.LED.GPS, GPIOService.Color.RED);
-                })
-                .start();
+            @Override
+            public void handleSUBFRAME(final SUBFRAMEObject subframe) {
+            }
+
+            @Override
+            public void handleATT(final ATTObject att) {
+            }
+
+            @Override
+            public void handleDevice(final DeviceObject device) {
+            }
+
+            @Override
+            public void handleDevices(final DevicesObject devices) {
+            }
+        });
+
+        ep.start();
     }
 }
